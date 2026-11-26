@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#FFF6EC">
+<title>틀린그림찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFF6EC; --card: #FFFFFF; --ink: #2D2A26; --sub: #7A7268; --line: #EFE4D6;
+    --coral: #FF6B6B; --coral-d: #E5484D; --mint: #2EC4A0; --sun: #FFC94D; --sky: #5AA9FF;
+    --shadow: 0 6px 0 rgba(45, 42, 38, .12);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overscroll-behavior: none; }
+  body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
+  .title, h1, h2, .btn, .jua { font-family: "Jua", -apple-system, "Apple SD Gothic Neo", sans-serif; font-weight: 400; }
+  button { font: inherit; color: inherit; }
+  .screen { display: none; min-height: 100%; }
+  .screen.on { display: flex; flex-direction: column; }
+  .wrap { width: 100%; max-width: 520px; margin: 0 auto; padding: 20px 16px calc(24px + var(--safe-b)); }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; border: 0; border-radius: 18px;
+    padding: 16px; font-size: 20px; cursor: pointer; background: var(--card); box-shadow: var(--shadow); transition: transform .08s; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(45, 42, 38, .12); }
+  .btn.coral { background: var(--coral); color: #fff; }
+  .btn.mint { background: var(--mint); color: #fff; }
+  .btn.sun { background: var(--sun); }
+  .btn.ghost { background: transparent; box-shadow: none; color: var(--sub); font-size: 17px; padding: 10px; }
+  .btn small { font-family: -apple-system, sans-serif; font-size: 12px; opacity: .85; }
+  .btn:disabled { opacity: .45; }
+
+  /* 홈 */
+  #home .wrap { display: flex; flex-direction: column; gap: 14px; justify-content: center; min-height: 100%; }
+  .logo { text-align: center; margin-bottom: 6px; }
+  .logo .big { font-size: 46px; line-height: 1.05; }
+  .logo .big span { color: var(--coral); }
+  .logo p { margin: 8px 0 0; color: var(--sub); font-size: 15px; }
+  .logo .eyes { font-size: 40px; display: inline-block; animation: bob 2.4s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-6px) rotate(-4deg); } }
+  .nick { display: flex; flex-direction: column; gap: 6px; background: var(--card); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .nick label { font-size: 13px; color: var(--sub); }
+  .nick input { border: 2px solid var(--line); border-radius: 12px; padding: 12px; font-size: 18px; outline: none; background: #FFFCF8; }
+  .nick input:focus { border-color: var(--coral); }
+  .nick .err { color: var(--coral-d); font-size: 13px; min-height: 16px; }
+  .row { display: flex; gap: 10px; }
+
+  /* 공통 헤더 */
+  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .head h2 { margin: 0; font-size: 26px; flex: 1; }
+  .icon-btn { border: 0; background: var(--card); width: 44px; height: 44px; border-radius: 14px; box-shadow: var(--shadow); font-size: 20px; cursor: pointer; flex: none; }
+
+  /* 장르 */
+  .genres { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .genre { position: relative; border: 0; padding: 0; border-radius: 20px; overflow: hidden; aspect-ratio: 3/4; cursor: pointer; box-shadow: var(--shadow); background: #ddd; }
+  .genre img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .genre .lab { position: absolute; inset: auto 0 0 0; padding: 30px 12px 12px; color: #fff; text-align: left; font-family: "Jua", sans-serif; font-size: 24px;
+    background: linear-gradient(transparent, rgba(0,0,0,.65)); }
+  .genre .lab small { display: block; font-family: -apple-system, sans-serif; font-size: 12px; opacity: .9; }
+  .genre.wide { grid-column: span 2; aspect-ratio: auto; height: 84px; background: var(--sun); color: var(--ink); font-family: "Jua", sans-serif; font-size: 22px; }
+
+  /* 연습 사진 목록 */
+  .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .photo { border: 0; padding: 0; border-radius: 14px; overflow: hidden; aspect-ratio: 3/4; position: relative; cursor: pointer; box-shadow: var(--shadow); background: #ddd; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo .st { position: absolute; left: 6px; top: 6px; background: rgba(255,255,255,.92); border-radius: 8px; font-size: 11px; padding: 2px 6px; color: #E89B00; }
+  .photo .done { position: absolute; right: 6px; top: 6px; background: var(--mint); color: #fff; border-radius: 8px; font-size: 11px; padding: 2px 6px; }
+
+  /* 게임 */
+  #play { height: 100%; }
+  #play.on { display: flex; }
+  .hud { padding: 10px 12px 6px; display: flex; flex-direction: column; gap: 8px; max-width: 1100px; width: 100%; margin: 0 auto; }
+  .hud-top { display: flex; align-items: center; gap: 8px; }
+  .hud .stage { font-family: "Jua", sans-serif; font-size: 18px; white-space: nowrap; }
+  .hud .stars { color: #E89B00; font-size: 14px; letter-spacing: -1px; }
+  .hud .score { margin-left: auto; font-family: "Jua", sans-serif; font-size: 18px; white-space: nowrap; }
+  .hud .icon-btn { width: 38px; height: 38px; border-radius: 12px; font-size: 17px; }
+  .timebar { position: relative; height: 14px; background: #EADFD0; border-radius: 99px; overflow: hidden; }
+  .timebar i { position: absolute; inset: 0 auto 0 0; background: var(--mint); border-radius: 99px; transition: background .3s; }
+  .timebar.warn i { background: var(--sun); }
+  .timebar.danger i { background: var(--coral); animation: blink .5s infinite alternate; }
+  @keyframes blink { to { opacity: .55; } }
+  .hud-bot { display: flex; align-items: center; gap: 10px; }
+  .dots { display: flex; gap: 6px; }
+  .dots b { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--coral); display: block; transition: .2s; }
+  .dots b.on { background: var(--coral); transform: scale(1.1); }
+  .secs { font-family: "Jua", sans-serif; font-size: 18px; min-width: 44px; }
+  .hint { margin-left: auto; border: 0; border-radius: 12px; background: var(--sun); padding: 7px 12px; font-family: "Jua", sans-serif; font-size: 15px; box-shadow: 0 3px 0 rgba(0,0,0,.12); cursor: pointer; }
+  .hint:disabled { opacity: .4; }
+  .zoom-reset { border: 0; border-radius: 12px; background: var(--card); padding: 7px 10px; font-size: 13px; box-shadow: 0 3px 0 rgba(0,0,0,.1); display: none; cursor: pointer; }
+  .zoom-reset.on { display: block; }
+
+  .board { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 8px calc(10px + var(--safe-b)); position: relative; }
+  .board.stack { flex-direction: column; }
+  .pic { position: relative; overflow: hidden; border-radius: 12px; background: #000; touch-action: none; flex: none; box-shadow: 0 4px 0 rgba(45,42,38,.12); }
+  .pic .inner { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; }
+  .pic img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+  .pic .tag { position: absolute; left: 8px; top: 8px; z-index: 3; background: rgba(0,0,0,.45); color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 8px; pointer-events: none; }
+  .mark { position: absolute; border: 4px solid var(--coral); border-radius: 50%; transform: translate(-50%, -50%) scale(.2); opacity: 0;
+    animation: pop .35s cubic-bezier(.3, 1.6, .5, 1) forwards; pointer-events: none; box-shadow: 0 0 0 2px rgba(255,255,255,.7), inset 0 0 0 2px rgba(255,255,255,.7); }
+  .mark.miss { border-color: #fff; border-style: dashed; box-shadow: 0 0 0 2px rgba(0,0,0,.4); }
+  @keyframes pop { to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+  .ring { position: absolute; border: 4px solid var(--sun); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; animation: ring 1.6s ease-out forwards; }
+  @keyframes ring { 0% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); } 25% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; } }
+  .xmark { position: absolute; transform: translate(-50%, -50%); font-size: 34px; color: var(--coral-d); font-weight: 900; pointer-events: none; text-shadow: 0 0 4px #fff, 0 0 8px #fff; animation: fade 0.7s forwards; }
+  @keyframes fade { 0% { transform: translate(-50%, -50%) scale(1.4); } 100% { opacity: 0; transform: translate(-50%, -80%) scale(1); } }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .float { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); font-family: "Jua", sans-serif; font-size: 28px; pointer-events: none; z-index: 20; animation: up 0.9s forwards; text-shadow: 0 2px 0 #fff; }
+  .float.bad { color: var(--coral-d); } .float.good { color: var(--mint); }
+  @keyframes up { to { opacity: 0; transform: translate(-50%, -40px); } }
+  .loading { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font-family: "Jua", sans-serif; font-size: 22px; color: var(--sub); }
+  .loading.on { display: flex; }
+
+  /* 모달 */
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(45,42,38,.5); display: none; align-items: center; justify-content: center; padding: 16px; }
+  .modal.on { display: flex; }
+  .sheet { width: 100%; max-width: 400px; background: var(--bg); border-radius: 26px; padding: 24px 18px 18px; text-align: center; animation: rise .3s cubic-bezier(.3, 1.4, .5, 1); max-height: 92vh; overflow: auto; }
+  @keyframes rise { from { transform: translateY(30px) scale(.95); opacity: 0; } }
+  .sheet .emoji { font-size: 54px; line-height: 1; }
+  .sheet h2 { font-size: 30px; margin: 10px 0 4px; }
+  .sheet p { color: var(--sub); margin: 0 0 14px; line-height: 1.55; font-size: 15px; }
+  .sheet .btns { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .breakdown { background: var(--card); border-radius: 16px; padding: 12px 14px; text-align: left; font-size: 14px; margin-bottom: 12px; }
+  .breakdown div { display: flex; justify-content: space-between; padding: 3px 0; }
+  .breakdown .tot { border-top: 2px dashed var(--line); margin-top: 6px; padding-top: 8px; font-family: "Jua", sans-serif; font-size: 20px; }
+  .bignum { font-family: "Jua", sans-serif; font-size: 52px; color: var(--coral); line-height: 1.1; }
+
+  /* 게임 방법 */
+  .slides { position: relative; min-height: 210px; }
+  .slide { display: none; }
+  .slide.on { display: block; animation: rise .25s; }
+  .slide .demo { font-size: 64px; margin: 4px 0 8px; }
+  .pager { display: flex; gap: 6px; justify-content: center; margin: 6px 0 12px; }
+  .pager b { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .pager b.on { background: var(--coral); width: 22px; border-radius: 9px; }
+  .rules { text-align: left; background: var(--card); border-radius: 16px; padding: 12px 14px; font-size: 14px; color: var(--ink); line-height: 1.7; }
+
+  /* 랭킹 */
+  .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
+  .tabs button { border: 0; border-radius: 99px; padding: 8px 14px; background: var(--card); box-shadow: 0 3px 0 rgba(0,0,0,.08); white-space: nowrap; cursor: pointer; font-family: "Jua", sans-serif; font-size: 16px; }
+  .tabs button.on { background: var(--ink); color: #fff; }
+  .rank-list { display: flex; flex-direction: column; gap: 8px; }
+  .rank-item { display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: 16px; padding: 12px 14px; box-shadow: 0 3px 0 rgba(0,0,0,.06); }
+  .rank-item .no { width: 34px; text-align: center; font-family: "Jua", sans-serif; font-size: 20px; color: var(--sub); }
+  .rank-item .nm { flex: 1; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank-item .pt { font-family: "Jua", sans-serif; font-size: 19px; }
+  .rank-item .sg { font-size: 12px; color: var(--sub); }
+  .rank-item.me { outline: 3px solid var(--coral); }
+  .rank-item:nth-child(1) .no { font-size: 26px; }
+  .notice { font-size: 13px; color: var(--sub); text-align: center; margin: 10px 0; line-height: 1.5; }
+  .empty { text-align: center; color: var(--sub); padding: 40px 0; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 80; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- 홈 -->
+<section class="screen on" id="home">
+  <div class="wrap">
+    <div class="logo">
+      <div class="eyes">👀</div>
+      <div class="big title">틀린<span>그림</span><br>찾기</div>
+      <p>두 사진에서 다른 곳 5개를 찾아보세요!</p>
+    </div>
+    <div class="nick">
+      <label for="nickInput">닉네임 (랭킹에 표시돼요)</label>
+      <input id="nickInput" maxlength="10" placeholder="2~10자" autocomplete="off">
+      <div class="err" id="nickErr"></div>
+    </div>
+    <button class="btn coral" data-go="challenge">🏆 도전 모드 <small>★1~★5 연속 · 랭킹</small></button>
+    <button class="btn mint" data-go="practice">🎯 연습 모드 <small>원하는 사진 골라서</small></button>
+    <div class="row">
+      <button class="btn sun" data-go="rank">🥇 랭킹</button>
+      <button class="btn" data-go="howto">❓ 게임 방법</button>
+    </div>
+  </div>
+</section>
+
+<!-- 장르 선택 -->
+<section class="screen" id="genre">
+  <div class="wrap">
+    <div class="head"><button class="icon-btn" data-back>←</button><h2 id="genreTitle">장르 선택</h2></div>
+    <div class="genres" id="genreGrid"></div>
+  </div>
+</section>
+
+<!-- 연습: 사진 선택 -->
+<section class="screen" id="practice">
+  <div class="wrap">
+    <div class="head"><button class="icon-btn" data-back>←</button><h2 id="practiceTitle">사진 고르기</h2></div>
+    <div class="photos" id="photoGrid"></div>
+  </div>
+</section>
+
+<!-- 게임 -->
+<section class="screen" id="play">
+  <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+    <div class="hud">
+      <div class="hud-top">
+        <button class="icon-btn" id="quitBtn" aria-label="나가기">✕</button>
+        <div><div class="stage" id="stageLabel">스테이지 1/5</div><div class="stars" id="starLabel">★</div></div>
+        <div class="score" id="scoreLabel">0점</div>
+      </div>
+      <div class="timebar" id="timebar"><i id="timefill" style="width:100%"></i></div>
+      <div class="hud-bot">
+        <div class="secs" id="secs">90</div>
+        <div class="dots" id="dots"></div>
+        <button class="zoom-reset" id="zoomReset">🔍 원래대로</button>
+        <button class="hint" id="hintBtn">💡 힌트 -10초</button>
+      </div>
+    </div>
+    <div class="board" id="board">
+      <div class="pic" id="picA"><div class="inner"><img alt="원본"><div class="layer"></div></div><span class="tag">원본</span></div>
+      <div class="pic" id="picB"><div class="inner"><img alt="수정본"><div class="layer"></div></div><span class="tag">찾아보세요</span></div>
+      <div class="loading" id="loading">사진 불러오는 중…</div>
+    </div>
+  </div>
+</section>
+
+<!-- 랭킹 -->
+<section class="screen" id="rank">
+  <div class="wrap">
+    <div class="head"><button class="icon-btn" data-back>←</button><h2>랭킹</h2><button class="icon-btn" id="rankRefresh" aria-label="새로고침">↻</button></div>
+    <div class="tabs" id="rankTabs"></div>
+    <div class="rank-list" id="rankList"></div>
+    <div class="notice" id="rankNotice"></div>
+  </div>
+</section>
+
+<!-- 게임 방법 -->
+<div class="modal" id="howto">
+  <div class="sheet">
+    <div class="slides">
+      <div class="slide on">
+        <div class="demo">🖼️👆🖼️</div>
+        <h2>다른 곳 5개 찾기</h2>
+        <p>위아래(또는 양옆) 두 사진을 비교해서<br>다른 곳을 <b>탭</b>하세요. 어느 쪽 사진을 눌러도 돼요.</p>
+      </div>
+      <div class="slide">
+        <div class="demo">⏱️❌</div>
+        <h2>시간과 감점</h2>
+        <p>제한시간 안에 모두 찾아야 해요.<br>틀린 곳을 누르면 <b>3초 감점</b>!<br>막히면 💡 힌트(10초 차감)를 쓰세요.</p>
+      </div>
+      <div class="slide">
+        <div class="demo">🏆</div>
+        <h2>도전 모드 & 점수</h2>
+        <div class="rules">
+          ★1 → ★5 다섯 스테이지 연속 (90초 → 50초)<br>
+          • 찾은 곳 1개당 <b>100점</b><br>
+          • 남은 시간 1초당 <b>10점</b><br>
+          • 오답 1번당 <b>-30점</b> · 힌트 없이 깨면 <b>+200점</b><br>
+          • 두 손가락으로 사진 <b>확대</b> 가능
+        </div>
+      </div>
+    </div>
+    <div class="pager" id="pager"><b class="on"></b><b></b><b></b></div>
+    <div class="btns"><button class="btn coral" id="howNext">다음</button></div>
+  </div>
+</div>
+
+<!-- 결과 모달 -->
+<div class="modal" id="modal"><div class="sheet" id="modalSheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="firebase-config.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
